@@ -13,7 +13,6 @@ def get_version() -> str:
     except (subprocess.CalledProcessError, FileNotFoundError):
         return "0.0.0"
 
-
 with open("README.md", encoding="utf-8") as f:
     long_description = f.read()
 
