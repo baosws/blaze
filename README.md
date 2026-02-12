@@ -2,8 +2,13 @@
   <img src="https://raw.githubusercontent.com/baosws/blaze/main/assets/blaze.png" alt="blaze logo" height="200"/>
 </div>
 
+# 🔥 Blaze: Name less. Build more.
 
-# 🔥 Blaze: Name less. Build more. 
+<div align="center">
+
+[![PyPI](https://img.shields.io/pypi/v/blaze-torch)](https://pypi.org/project/blaze-torch/)
+
+</div>
 
 A PyTorch adapter inspired by [Haiku's](https://dm-haiku.readthedocs.io) functional programming model. Write stateless forward functions using inline layer calls — no `nn.Module` boilerplate — and get back a proper `nn.Module` with full parameter management and `torch.jit.script` support.
 
@@ -13,7 +18,7 @@ Traditional way to define PyTorch models makes you write every layer **twice** �
 
 ### Example: Convolutional network
 
-**Traditional PyTorch**
+**Traditional PyTorch:**
 
 ```python
 class ConvNet(nn.Module):
@@ -35,7 +40,7 @@ class ConvNet(nn.Module):
 model = ConvNet()
 ```
 
-**Blaze**
+**Blaze:**
 
 ```python
 # No class. No __init__. No self. No invented names. Only logic.
@@ -46,7 +51,7 @@ def forward(x):
     return bl.Linear(64, 10)(x)
 
 model = bl.transform(forward)
-model.init(torch.randn(1, 3, 32, 32))
+model.init(torch.randn(1, 3, 32, 32)) # discovers and creates all modules
 ```
 
 ### 🗑️ What gets eliminated
