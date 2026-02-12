@@ -1,8 +1,7 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/baosws/blaze/main/assets/blaze.png" alt="blaze logo" height="200"/>
+  <h1><b></b>Blaze: Name less. Build more.</h1>
 </div>
-
-# 🔥 Blaze: Name less. Build more.
 
 <div align="center">
 
