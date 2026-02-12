@@ -1,9 +1,15 @@
+import os
 import subprocess
 
 from setuptools import find_packages, setup
 
 
 def get_version() -> str:
+    # GitHub Actions sets GITHUB_REF=refs/tags/vX.Y.Z on tag push.
+    # Read it first because `python -m build` runs in a temp dir without .git.
+    ref = os.environ.get("GITHUB_REF", "")
+    if ref.startswith("refs/tags/v"):
+        return ref[len("refs/tags/v"):]
     try:
         tag = subprocess.check_output(
             ["git", "describe", "--tags", "--abbrev=0"],
