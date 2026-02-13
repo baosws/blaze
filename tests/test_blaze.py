@@ -528,3 +528,44 @@ def test_TransformerDecoder():
 
     out = model(torch.randn(2, 5, 10), torch.randn(2, 5, 10))
     assert out.shape == (2, 5, 10)
+
+def test_subclass():
+    class PatchedTransformerEncoderLayer(bl.TransformerEncoderLayer):
+        def __init__(self, attn_dropout, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.attn_weights = None
+            self.attn_dropout = attn_dropout
+
+        def _sa_block(
+            self,
+            x: torch.Tensor,
+            attn_mask: torch.Tensor | None,
+            key_padding_mask: torch.Tensor | None,
+            is_causal: bool = False,
+        ) -> torch.Tensor:
+            if attn_mask is not None:
+                attn_mask = torch.where(torch.rand_like(attn_mask, dtype=torch.float32) < self.attn_dropout * self.training, torch.zeros_like(attn_mask), attn_mask)
+            x, attn_weights = self.self_attn(
+                x,
+                x,
+                x,
+                attn_mask=attn_mask,
+                key_padding_mask=key_padding_mask,
+                need_weights=True,
+                is_causal=is_causal,
+            )
+            self.attn_weights = attn_weights
+            return self.dropout1(x)
+    
+    def forward(x):
+        layer = PatchedTransformerEncoderLayer(attn_dropout=0.5, d_model=10, nhead=2, batch_first=True)
+        x = layer(x)
+        attn_weights = layer.attn_weights
+        return x, attn_weights
+    
+    model = bl.transform(forward)
+    model.init(torch.randn(2, 5, 10))
+    out = model(torch.randn(2, 5, 10))
+    assert out[0].shape == (2, 5, 10)
+    assert out[1].shape == (2, 5, 5)
+    assert (out[1] >= 0).all() and (out[1] <= 1).all()

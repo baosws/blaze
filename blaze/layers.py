@@ -20,8 +20,17 @@ class _BlazeLayerWrapper:
         full_path = prefix + "/" + local_name if prefix else local_name
 
         if frame.mode == Mode.INIT:
-            nn_cls = next(c for c in cls.__mro__[1:] if issubclass(c, nn.Module))
-            module = nn_cls(*args, **kwargs)
+            # If cls is a direct blaze wrapper, find the underlying nn.Module.
+            # If cls is a user subclass of a wrapper, create an uninitialized
+            # instance and let __init__ initialize it (which will call super().__init__).
+            if _BlazeLayerWrapper in cls.__bases__:
+                nn_cls = next(c for c in cls.__mro__[1:] if issubclass(c, nn.Module))
+                module = nn_cls(*args, **kwargs)
+            else:
+                # User subclass: create an uninitialized instance.
+                # Python will call __init__ automatically, which should call
+                # super().__init__(*args, **kwargs) to initialize the parent.
+                module = object.__new__(cls)
             frame.registry[full_path] = module
             frame.call_order.append(full_path)
         else:
