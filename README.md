@@ -79,7 +79,7 @@ model.init(torch.randn(1, 3, 32, 32)) # discovers and creates all modules
 - 🏷️ **Custom names** — any layer call accepts a `name=` keyword to override the auto-derived registry key.
 - ⚡ **`torch.jit.script` support** — after `init()`, models can be scripted for deployment with no extra steps.
 - 🔄 **Train/eval propagation** — `.train()` / `.eval()` propagate correctly to all registered sub-modules.
-- 🧱 **uilt-in layer wrappers** — covers linear, conv, norm, pooling, activation, dropout, recurrent, embedding, attention, transformer, and shape layers.
+- 🧱 **Built-in layer wrappers** — covers linear, conv, norm, pooling, activation, dropout, recurrent, embedding, attention, transformer, and shape layers.
 
 ## 📦 Installation
 
