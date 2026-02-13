@@ -535,6 +535,7 @@ def test_subclass():
             super().__init__(*args, **kwargs)
             self.attn_weights = None
             self.attn_dropout = attn_dropout
+            self.linear = bl.Linear(self.self_attn.embed_dim, self.self_attn.embed_dim)
 
         def _sa_block(
             self,
@@ -554,7 +555,8 @@ def test_subclass():
                 need_weights=True,
                 is_causal=is_causal,
             )
-            self.attn_weights = attn_weights
+            x = self.linear(x)
+            self.attn_weights = bl.Sigmoid()(bl.Linear(attn_weights.shape[-1], attn_weights.shape[-1])(attn_weights))
             return self.dropout1(x)
     
     def forward(x):

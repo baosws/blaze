@@ -10,7 +10,7 @@ import torch.nn as nn
 from .context import Frame, Mode, pop_frame, push_frame
 
 class _TraceWrapper(nn.Module):
-    """Temporary module used by ``compile()`` to produce a traced forward."""
+    """Temporary module used by ``init()`` to produce a traced forward."""
 
     def __init__(self, fn, registry):
         super().__init__()
