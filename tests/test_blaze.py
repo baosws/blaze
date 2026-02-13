@@ -569,3 +569,50 @@ def test_subclass():
     assert out[0].shape == (2, 5, 10)
     assert out[1].shape == (2, 5, 5)
     assert (out[1] >= 0).all() and (out[1] <= 1).all()
+
+def test_performance():
+    """Test that the performance is reasonable compared to regular PyTorch."""
+    from time import perf_counter
+    import torch.nn.functional as F
+    n_layers = 100
+    n_repeats = 1000
+
+    def forward(x):
+        for _ in range(n_layers):
+            x = bl.Linear(10, 10)(x)
+            x = F.relu(x)
+        return x
+
+    model = bl.transform(forward)
+    model.init(torch.randn(2, 10))
+    model = torch.jit.script(model)
+
+    start_time = perf_counter()
+    for _ in range(n_repeats):
+        _ = model(torch.randn(2, 10))
+    elapsed_blaze = perf_counter() - start_time
+
+    # Compare to regular PyTorch
+    class RegularModel(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.linears = nn.ModuleList([nn.Linear(10, 10) for _ in range(n_layers)])
+
+        def forward(self, x):
+            for linear in self.linears:
+                x = linear(x)
+                x = F.relu(x)
+            return x
+
+    regular_model = RegularModel()
+    regular_model = torch.jit.script(regular_model)
+
+    start_time = perf_counter()
+    for _ in range(n_repeats):
+        regular_model(torch.randn(2, 10))
+    elapsed_regular = perf_counter() - start_time
+
+    print(f"Blaze elapsed: {elapsed_blaze:.4f} seconds")
+    print(f"Regular elapsed: {elapsed_regular:.4f} seconds")
+
+    assert elapsed_blaze < 1.05 * elapsed_regular, "Blaze is too slow compared to regular PyTorch"
