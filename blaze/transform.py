@@ -17,7 +17,7 @@ class _TraceWrapper(nn.Module):
         self._fn_ref = fn
         self._reg = registry
         for key, mod in registry.items():
-            self.add_module(key.replace("/", "__"), mod)
+            self.add_module(key.replace(".", "__"), mod)
 
     def forward(self, *args):
         frame = Frame(mode=Mode.APPLY)

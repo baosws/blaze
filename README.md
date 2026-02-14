@@ -220,3 +220,7 @@ for x, y in dataloader:
 | [Equinox](https://github.com/patrick-kidger/equinox) | JAX | Neural networks as callable PyTrees. Models are plain Python dataclasses; parameters live in the tree rather than a separate registry, making them compatible with `jax.jit`/`jax.grad` directly. |
 | [torch.func](https://docs.pytorch.org/docs/stable/func.html) | PyTorch | PyTorch's built-in functional transforms (formerly `functorch`). `torch.func.functional_call` lets you call an existing `nn.Module` with an explicit parameter dict, enabling per-sample gradients, meta-learning, etc. |
 | [PyTorch Lightning](https://github.com/Lightning-AI/pytorch-lightning) | PyTorch | Training loop abstraction over `nn.Module`. Reduces boilerplate around the train/val/test cycle but keeps the imperative `nn.Module` programming model. |
+
+## 📄 License
+
+[MIT](LICENSE)

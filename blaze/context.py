@@ -44,7 +44,7 @@ class Frame:
         self.counter_stack.pop()
 
     def current_path(self) -> str:
-        return "/".join(self.name_stack)
+        return ".".join(self.name_stack)
 
 
 class _FrameStack(threading.local):

@@ -17,7 +17,7 @@ class _BlazeLayerWrapper:
         local_name = frame.current_counter.next_name(base)
 
         prefix = frame.current_path()
-        full_path = prefix + "/" + local_name if prefix else local_name
+        full_path = prefix + "." + local_name if prefix else local_name
 
         if frame.mode == Mode.INIT:
             # If cls is a direct blaze wrapper, find the underlying nn.Module.

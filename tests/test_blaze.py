@@ -1,12 +1,8 @@
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
-import inspect
-
 import pytest
 import torch
 import torch.nn as nn
-
 import blaze as bl
 
 
@@ -20,9 +16,7 @@ def test_demo_example():
     output = model(torch.randn(5, 10))
     assert output.shape == torch.Size([5, 20])
 
-
 # ---------- Multi-layer naming ----------
-
 def test_multi_layer_naming():
     """Two Linear calls produce 'linear' and 'linear_1'."""
 
@@ -43,8 +37,6 @@ def test_multi_layer_naming():
 
 
 # ---------- Nested bl.Module ----------
-
-
 def test_nested_module():
     class Block(bl.Module):
         def __call__(self, x, dim=32):
@@ -63,18 +55,16 @@ def test_nested_module():
     model.init(torch.randn(2, 16))
 
     keys = sorted(model._registry.keys())
-    assert "block/linear" in keys
-    assert "block/relu" in keys
-    assert "block_1/linear" in keys
-    assert "block_1/relu" in keys
+    assert "block.linear" in keys
+    assert "block.relu" in keys
+    assert "block_1.linear" in keys
+    assert "block_1.relu" in keys
 
     out = model(torch.randn(2, 16))
     assert out.shape == (2, 10)
 
 
 # ---------- Parameters work with optimizer ----------
-
-
 def test_optimizer_integration():
     def forward(x):
         x = bl.Linear(10, 20)(x)
@@ -95,8 +85,6 @@ def test_optimizer_integration():
 
 
 # ---------- state_dict / load_state_dict ----------
-
-
 def test_state_dict_roundtrip():
     def forward(x):
         return bl.Linear(10, 5)(x)
@@ -118,8 +106,6 @@ def test_state_dict_roundtrip():
 
 
 # ---------- train/eval propagation ----------
-
-
 def test_train_eval_propagation():
     def forward(x):
         x = bl.Linear(10, 10)(x)
@@ -140,10 +126,7 @@ def test_train_eval_propagation():
     # Just check it runs without error
     _ = model(x)
 
-
 # ---------- BatchNorm stateful ----------
-
-
 def test_batchnorm():
     def forward(x):
         x = bl.Linear(10, 20)(x)
@@ -163,8 +146,6 @@ def test_batchnorm():
 
 
 # ---------- get_parameter ----------
-
-
 def test_get_parameter():
     def forward(x):
         scale = bl.get_parameter("scale", (1,), init_fn=torch.ones)
@@ -182,8 +163,6 @@ def test_get_parameter():
 
 
 # ---------- get_state ----------
-
-
 def test_get_state_basic():
     def forward(x):
         buf = bl.get_state("running_mean", (x.shape[-1],), init_fn=torch.zeros)
@@ -199,7 +178,6 @@ def test_get_state_basic():
     out = model(torch.randn(3, 5))
     assert out.shape == (3, 5)
 
-
 def test_get_state_not_trainable():
     def forward(x):
         bl.get_state("buf", (4,))
@@ -213,7 +191,6 @@ def test_get_state_not_trainable():
     assert len(params) == 0
     assert len(buffers) == 1
 
-
 def test_get_state_init_fn():
     def forward(x):
         offset = bl.get_state("offset", (3,), init_fn=torch.ones)
@@ -225,7 +202,6 @@ def test_get_state_init_fn():
     x = torch.zeros(1, 3)
     out = model(x)
     torch.testing.assert_close(out, torch.ones(1, 3))
-
 
 def test_get_state_scoped():
     class Counter(bl.Module):
@@ -239,12 +215,9 @@ def test_get_state_scoped():
     model = bl.transform(forward)
     model.init(torch.randn(2, 4))
 
-    assert "counter/count" in model._registry
-
+    assert "counter.count" in model._registry
 
 # ---------- Custom name ----------
-
-
 def test_custom_name():
     def forward(x):
         x = bl.Linear(10, 10, name="encoder")(x)
@@ -259,8 +232,6 @@ def test_custom_name():
 
 
 # ---------- Conv2d ----------
-
-
 def test_conv2d():
     def forward(x):
         x = bl.Conv2d(3, 16, kernel_size=3, padding=1)(x)
@@ -275,10 +246,7 @@ def test_conv2d():
     out = model(torch.randn(2, 3, 32, 32))
     assert out.shape == (2, 16, 16, 16)
 
-
 # ---------- Error: not compiled ----------
-
-
 def test_error_not_compiled():
     def forward(x):
         return bl.Linear(10, 5)(x)
@@ -287,18 +255,12 @@ def test_error_not_compiled():
     with pytest.raises(RuntimeError, match="not compiled"):
         model(torch.randn(1, 10))
 
-
 # ---------- Error: outside transform ----------
-
-
 def test_error_outside_transform():
     with pytest.raises(RuntimeError, match="No active blaze frame"):
         bl.Linear(10, 5)
 
-
 # ---------- Deeply nested modules ----------
-
-
 def test_deeply_nested():
     class Inner(bl.Module):
         def __call__(self, x):
@@ -317,16 +279,14 @@ def test_deeply_nested():
     model.init(torch.randn(2, 8))
 
     keys = sorted(model._registry.keys())
-    assert "outer/inner/linear" in keys
-    assert "outer/inner_1/linear" in keys
+    assert "outer.inner.linear" in keys
+    assert "outer.inner_1.linear" in keys
 
     out = model(torch.randn(2, 8))
     assert out.shape == (2, 8)
 
 
 # ---------- Loop creates distinct modules ----------
-
-
 def test_loop():
     def forward(x):
         for _ in range(3):
@@ -348,8 +308,6 @@ def test_loop():
 
 
 # ---------- Weights are actually reused between compile and forward ----------
-
-
 def test_weights_reused():
     """Verify that compile creates weights and forward reuses them (not new ones)."""
 
@@ -531,10 +489,11 @@ def test_TransformerDecoder():
 
 def test_subclass():
     class PatchedTransformerEncoderLayer(bl.TransformerEncoderLayer):
-        def __init__(self, attn_dropout, *args, **kwargs):
+        def __init__(self, alpha, attn_dropout, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.attn_weights = None
             self.attn_dropout = attn_dropout
+            self.alpha = alpha
             self.linear = bl.Linear(self.self_attn.embed_dim, self.self_attn.embed_dim)
 
         def _sa_block(
@@ -556,20 +515,21 @@ def test_subclass():
                 is_causal=is_causal,
             )
             x = self.linear(x)
-            self.attn_weights = bl.Sigmoid()(bl.Linear(attn_weights.shape[-1], attn_weights.shape[-1])(attn_weights))
+            self.attn_weights = bl.Sigmoid()(bl.Linear(attn_weights.shape[-1], attn_weights.shape[-1])(attn_weights) * self.alpha)
             return self.dropout1(x)
     
     def forward(x):
-        layer = PatchedTransformerEncoderLayer(attn_dropout=0.5, d_model=10, nhead=2, batch_first=True)
+        layer = PatchedTransformerEncoderLayer(alpha=10, attn_dropout=0.5, d_model=10, nhead=2, batch_first=True)
         x = layer(x)
         attn_weights = layer.attn_weights
-        return x, attn_weights
+        return x, attn_weights, torch.tensor(layer.alpha)
     
     model = bl.transform(forward)
     model.init(torch.randn(2, 5, 10))
     out = model(torch.randn(2, 5, 10))
     assert out[0].shape == (2, 5, 10)
     assert out[1].shape == (2, 5, 5)
+    assert out[2] == 10
     assert (out[1] >= 0).all() and (out[1] <= 1).all()
 
 def test_performance():

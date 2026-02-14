@@ -33,7 +33,7 @@ def get_state(
     frame = get_current_frame()
 
     prefix = frame.current_path()
-    full_path = prefix + "/" + name if prefix else name
+    full_path = prefix + "." + name if prefix else name
 
     if frame.mode == Mode.INIT:
         if init_fn is None:
@@ -67,7 +67,7 @@ def get_parameter(
     frame = get_current_frame()
 
     prefix = frame.current_path()
-    full_path = prefix + "/" + name if prefix else name
+    full_path = prefix + "." + name if prefix else name
 
     if frame.mode == Mode.INIT:
         if init_fn is None:
